@@ -1,0 +1,3 @@
+[submodule "ym-to-deezer-migrate"]
+	path = ym-to-deezer-migrate
+	url = git://github.com/andrewozhegov/ym-to-deezer-migrate.git
