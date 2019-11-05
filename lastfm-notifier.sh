@@ -8,13 +8,16 @@ Usage: $0 <args>
 Arguments:
     -u, --user         lastfm username
     -s, --scrobbles    scrobbles count to send notification (50000 as default)
-    -m, --mp3          specify mp3 file as notification (~/Documents/notify.mp3 as default)
+    -m, --mp3          specify mp3 alert file
+
+Example:
+    $ $0 -u andrewozhegov -s 80000 -m ~/Documents/notify.mp3
+
 EOF
 }
 
 USER="andrewozhegov"
 SCROBBLES="50000"
-MP3="$HOME/Documents/notify.mp3"
 
 for arg in "$@" ; do
     case $arg in
@@ -47,7 +50,10 @@ do
         old_value=$current_scrobbles_count
     fi
 
-    [ "${current_count}" -ge "$SCROBBLES" ] && mpg123 "$MP3"
+    [ "${current_count}" -ge "$SCROBBLES" ] && {
+        [ -f "$MP3" ] && mpg123 "$MP3"
+        exit 0
+    }
 
     sleep 60
 done
