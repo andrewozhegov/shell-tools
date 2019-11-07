@@ -2,6 +2,9 @@
 
 set -x
 
+DATASET_SIZE=50
+SOURCE_DATA_PATH="/home/HwHiAiUser/backup/datasets/my-datasets/source_data"
+
 DATASET="${PWD##*/}"
 ANNOTATIONS_DIR="${PWD}/HiAIAnnotations"
 IMAGES_DIR="${DATASET}Raw"
@@ -12,8 +15,8 @@ function create_labels
   mkdir -p "${ANNOTATIONS_DIR}"
   LABEL_FILE="${ANNOTATIONS_DIR}/HiAI_label.json"
   echo -n '{' >  "${LABEL_FILE}"
-  for n in `ls data` ; do
-    for class in `ls data/$n` ; do
+  for n in `ls ${SOURCE_DATA_PATH}` ; do
+    for class in `ls ${SOURCE_DATA_PATH}/$n` ; do
       echo -n '"'${n}'": "'${class}'", ' >> "${LABEL_FILE}"
     done
   done
@@ -70,10 +73,10 @@ EOF
   
   local id=0
   mkdir -p "${IMAGES_DIR_PATH}"
-  for n in `ls data` ; do
-    class="`ls data/$n`"
-    class_dir="data/${n}/${class}"
-    for file in `ls ${class_dir}` ; do
+  for n in `ls ${SOURCE_DATA_PATH}` ; do
+    class="`ls ${SOURCE_DATA_PATH}/$n`"
+    class_dir="${SOURCE_DATA_PATH}/${n}/${class}"
+    for file in `ls ${class_dir} | head -$(expr ${DATASET_SIZE} / 2)` ; do
       result_file="${file%%.*}_${class}.${file##*.}"
       cp "${class_dir}/${file}" "${IMAGES_DIR_PATH}/${result_file}"
       create_annotation "${result_file}" 224 ${n} ${class} ${id} 224
