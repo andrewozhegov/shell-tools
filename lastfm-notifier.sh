@@ -16,8 +16,9 @@ Example:
 EOF
 }
 
+APP_API_KEY="5e612db013450b4e282b84bd4ef3d9d7"
 USER="andrewozhegov"
-SCROBBLES="50000"
+SCROBBLES="100000"
 
 for arg in "$@" ; do
     case $arg in
@@ -28,7 +29,7 @@ for arg in "$@" ; do
     esac
 done
 
-for pkg in mpg123 libnotify-bin curl ; do
+for pkg in mpg123 libnotify-bin curl jq ; do
     dpkg -s $pkg &>/dev/null ||
     echo "Package '$pkg' is required, but not found!"
 done
@@ -36,24 +37,19 @@ done
 while true
 do
     current_count="$(
-        curl -sb -H "Accept: application/json" https://www.last.fm/user/$USER | \
-        grep -Po '(?<=<a href="/user/'$USER'/library">)(.*)(?=</a></p>)' | \
-        sed 's/,//'
+        curl -s "http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=$USER&api_key=$APP_API_KEY&format=json" | \
+        jq -r '.user.playcount'
     )"
 
     [ -z "${current_count}" ] && continue
 
     echo "Scrobbles: ${current_count}"
 
-    if [ "$current_count" -ne "${old_value:-0}" ]; then 
+    if [ "$current_count" -ne "${old_value:-0}" ]; then
         notify-send "Scrobbles: ${current_count}"
         old_value=$current_scrobbles_count
     fi
 
-    [ "${current_count}" -ge "$SCROBBLES" ] && {
-        [ -f "$MP3" ] && mpg123 "$MP3"
-        exit 0
-    }
 
     sleep 60
 done
